@@ -712,8 +712,7 @@ impl<'a> JNIEnv<'a> {
     ///
     /// Under the hood, this simply calls the `Call<Type>MethodA` method with
     /// the provided arguments.
-    #[allow(unused_unsafe)]
-    pub unsafe fn call_method_unsafe<T>(
+    pub fn call_method_unsafe<T>(
         &self,
         obj: JObject,
         method_id: T,
@@ -830,9 +829,8 @@ impl<'a> JNIEnv<'a> {
 
         let class = self.auto_local(self.get_object_class(obj)?.into());
 
-        let res = unsafe { self.call_method_unsafe(obj, (&class, name, sig), parsed.ret, args) };
-
-        res
+        // TODO come up with solution about methods naming solution/joining (used to be unsafe)
+        self.call_method_unsafe(obj, (&class, name, sig), parsed.ret, args)
     }
 
     /// Calls a static method safely. This comes with a number of
