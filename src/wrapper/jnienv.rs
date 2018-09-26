@@ -600,8 +600,7 @@ impl<'a> JNIEnv<'a> {
     ///
     /// Under the hood, this simply calls the `CallStatic<Type>MethodA` method
     /// with the provided arguments.
-    #[allow(unused_unsafe)]
-    pub unsafe fn call_static_method_unsafe<T, U>(
+    pub fn call_static_method_unsafe<T, U>(
         &self,
         class: T,
         method_id: U,
@@ -623,6 +622,7 @@ impl<'a> JNIEnv<'a> {
         // TODO clean this up
         Ok(match ret {
             JavaType::Object(_) | JavaType::Array(_) => {
+                // TODO shouldn't it be a non_void instead of non_null here?
                 let obj: JObject = jni_non_null_call!(
                     self.internal,
                     CallStaticObjectMethodA,
@@ -636,7 +636,7 @@ impl<'a> JNIEnv<'a> {
             JavaType::Method(_) => unimplemented!(),
             JavaType::Primitive(p) => {
                 let v: JValue = match p {
-                    Primitive::Boolean => (jni_unchecked!(
+                    Primitive::Boolean => (jni_non_void_call!(
                         self.internal,
                         CallStaticBooleanMethodA,
                         class,
@@ -644,56 +644,56 @@ impl<'a> JNIEnv<'a> {
                         jni_args
                     ) == sys::JNI_TRUE)
                         .into(),
-                    Primitive::Char => jni_unchecked!(
+                    Primitive::Char => jni_non_void_call!(
                         self.internal,
                         CallStaticCharMethodA,
                         class,
                         method_id,
                         jni_args
                     ).into(),
-                    Primitive::Short => jni_unchecked!(
+                    Primitive::Short => jni_non_void_call!(
                         self.internal,
                         CallStaticShortMethodA,
                         class,
                         method_id,
                         jni_args
                     ).into(),
-                    Primitive::Int => jni_unchecked!(
+                    Primitive::Int => jni_non_void_call!(
                         self.internal,
                         CallStaticIntMethodA,
                         class,
                         method_id,
                         jni_args
                     ).into(),
-                    Primitive::Long => jni_unchecked!(
+                    Primitive::Long => jni_non_void_call!(
                         self.internal,
                         CallStaticLongMethodA,
                         class,
                         method_id,
                         jni_args
                     ).into(),
-                    Primitive::Float => jni_unchecked!(
+                    Primitive::Float => jni_non_void_call!(
                         self.internal,
                         CallStaticFloatMethodA,
                         class,
                         method_id,
                         jni_args
                     ).into(),
-                    Primitive::Double => jni_unchecked!(
+                    Primitive::Double => jni_non_void_call!(
                         self.internal,
                         CallStaticDoubleMethodA,
                         class,
                         method_id,
                         jni_args
                     ).into(),
-                    Primitive::Byte => jni_unchecked!(
+                    Primitive::Byte => jni_non_void_call!(
                         self.internal,
                         CallStaticByteMethodA,
                         class,
                         method_id,
                         jni_args
                     ).into(),
-                    Primitive::Void => jni_unchecked!(
+                    Primitive::Void => jni_non_void_call!(
                         self.internal,
                         CallStaticVoidMethodA,
                         class,
@@ -865,7 +865,8 @@ impl<'a> JNIEnv<'a> {
         // and we'll need that for the next call.
         let class = class.lookup(self)?;
 
-        unsafe { self.call_static_method_unsafe(class, (class, name, sig), parsed.ret, args) }
+        // TODO come up with solution about methods naming/joining solution (used to be unsafe)
+        self.call_static_method_unsafe(class, (class, name, sig), parsed.ret, args)
     }
 
     /// Create a new object using a constructor. This is done safely using
