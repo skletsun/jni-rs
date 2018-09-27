@@ -68,11 +68,11 @@ impl<'a> JMap<'a> {
     /// a null pointer would be returned.
     pub fn get(&self, key: JObject<'a>) -> Result<Option<JObject>> {
         let result = self.env.call_method_unsafe(
-                self.internal,
-                self.get,
-                JavaType::Object("java/lang/Object".into()),
-                &[key.into()],
-            );
+            self.internal,
+            self.get,
+            JavaType::Object("java/lang/Object".into()),
+            &[key.into()],
+        );
 
         match result {
             Ok(val) => Ok(Some(val.l()?)),
@@ -87,11 +87,11 @@ impl<'a> JMap<'a> {
     /// key already existed and `None` if it's a new key.
     pub fn put(&self, key: JObject<'a>, value: JObject<'a>) -> Result<Option<JObject>> {
         let result = self.env.call_method_unsafe(
-                self.internal,
-                self.put,
-                JavaType::Object("java/lang/Object".into()),
-                &[key.into(), value.into()],
-            );
+            self.internal,
+            self.put,
+            JavaType::Object("java/lang/Object".into()),
+            &[key.into(), value.into()],
+        );
 
         match result {
             Ok(val) => Ok(Some(val.l()?)),
@@ -106,11 +106,11 @@ impl<'a> JMap<'a> {
     /// `None` if there was no value for the key.
     pub fn remove(&self, key: JObject<'a>) -> Result<Option<JObject<'a>>> {
         let result = self.env.call_method_unsafe(
-                self.internal,
-                self.remove,
-                JavaType::Object("java/lang/Object".into()),
-                &[key.into()],
-            );
+            self.internal,
+            self.remove,
+            JavaType::Object("java/lang/Object".into()),
+            &[key.into()],
+        );
 
         match result {
             Ok(val) => Ok(Some(val.l()?)),
@@ -125,18 +125,18 @@ impl<'a> JMap<'a> {
     /// `EntrySet` from java and iterating over it.
     pub fn iter(&'a self) -> Result<JMapIter<'a>> {
         let set = self.env.call_method_unsafe(
-                self.internal,
-                (self.class, "entrySet", "()Ljava/util/Set;"),
-                JavaType::Object("java/util/Set".into()),
-                &[],
-            )?.l()?;
+            self.internal,
+            (self.class, "entrySet", "()Ljava/util/Set;"),
+            JavaType::Object("java/util/Set".into()),
+            &[],
+        )?.l()?;
 
         let iter = self.env.call_method_unsafe(
-                set,
-                ("java/util/Set", "iterator", "()Ljava/util/Iterator;"),
-                JavaType::Object("java/util/Iterator".into()),
-                &[],
-            )?.l()?;
+            set,
+            ("java/util/Set", "iterator", "()Ljava/util/Iterator;"),
+            JavaType::Object("java/util/Iterator".into()),
+            &[],
+        )?.l()?;
 
         let iter_class = self.env.find_class("java/util/Iterator")?;
 
@@ -180,35 +180,35 @@ pub struct JMapIter<'a> {
 impl<'a> JMapIter<'a> {
     fn get_next(&self) -> Result<Option<(JObject<'a>, JObject<'a>)>> {
         let has_next = self.map.env.call_method_unsafe(
-                self.iter,
-                self.has_next,
-                JavaType::Primitive(Primitive::Boolean),
-                &[],
-            )?.z()?;
+            self.iter,
+            self.has_next,
+            JavaType::Primitive(Primitive::Boolean),
+            &[],
+        )?.z()?;
 
         if !has_next {
             return Ok(None);
         }
         let next = self.map.env.call_method_unsafe(
-                self.iter,
-                self.next,
-                JavaType::Object("java/util/Map$Entry".into()),
-                &[],
-            )?.l()?;
+            self.iter,
+            self.next,
+            JavaType::Object("java/util/Map$Entry".into()),
+            &[],
+        )?.l()?;
 
         let key = self.map.env.call_method_unsafe(
-                next,
-                self.get_key,
-                JavaType::Object("java/lang/Object".into()),
-                &[],
-            )?.l()?;
+            next,
+            self.get_key,
+            JavaType::Object("java/lang/Object".into()),
+            &[],
+        )?.l()?;
 
         let value = self.map.env.call_method_unsafe(
-                next,
-                self.get_value,
-                JavaType::Object("java/lang/Object".into()),
-                &[],
-            )?.l()?;
+            next,
+            self.get_value,
+            JavaType::Object("java/lang/Object".into()),
+            &[],
+        )?.l()?;
 
         Ok(Some((key, value)))
     }
