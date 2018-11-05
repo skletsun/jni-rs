@@ -1,5 +1,5 @@
 use std::convert::From;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use JavaVM;
 use JNIEnv;
@@ -34,6 +34,7 @@ pub struct GlobalRef {
 struct GlobalRefGuard {
     obj: JObject<'static>,
     vm: JavaVM,
+    ref_deleted: RwLock<bool>,
 }
 
 
@@ -63,6 +64,16 @@ impl GlobalRef {
     pub fn as_obj(&self) -> JObject {
         self.inner.as_obj()
     }
+
+    /// Deletes the global reference to the inner object. Should be called from the attached
+    /// thread only.
+    pub fn drop_ref(&self, env: &JNIEnv) -> Result<()> {
+        if !*self.inner.ref_deleted.read().unwrap() {
+            *self.inner.ref_deleted.write().unwrap() = true;
+            delete_global_ref(env, self.inner.as_obj())?;
+        }
+        Ok(())
+    }
 }
 
 impl GlobalRefGuard {
@@ -72,6 +83,7 @@ impl GlobalRefGuard {
         GlobalRefGuard {
             obj: JObject::from(obj),
             vm,
+            ref_deleted: RwLock::new(false),
         }
     }
 
@@ -84,22 +96,26 @@ impl GlobalRefGuard {
     }
 }
 
+fn delete_global_ref(env: &JNIEnv, global_ref: JObject) -> Result<()> {
+    let internal = env.get_native_interface();
+    // This method is safe to call in case of pending exceptions (see chapter 2 of the spec)
+    jni_unchecked!(internal, DeleteGlobalRef, global_ref.into_inner());
+    Ok(())
+}
+
 impl Drop for GlobalRefGuard {
     fn drop(&mut self) {
-        fn drop_impl(env: &JNIEnv, global_ref: JObject) -> Result<()> {
-            let internal = env.get_native_interface();
-            // This method is safe to call in case of pending exceptions (see chapter 2 of the spec)
-            jni_unchecked!(internal, DeleteGlobalRef, global_ref.into_inner());
-            Ok(())
+        if *self.ref_deleted.read().unwrap() {
+            return;
         }
 
         let res = match self.vm.get_env() {
-            Ok(env) => drop_impl(&env, self.as_obj()),
+            Ok(env) => delete_global_ref(&env, self.as_obj()),
             Err(_) => {
                 warn!("Dropping a GlobalRef in a detached thread. Fix your code if this message appears frequently (see the GlobalRef docs).");
                 self.vm
                     .attach_current_thread()
-                    .and_then(|env| drop_impl(&env, self.as_obj()))
+                    .and_then(|env| delete_global_ref(&env, self.as_obj()))
             }
         };
 
