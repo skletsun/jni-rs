@@ -16,7 +16,8 @@ matrix:
   fast_finish: true
 
 jdk:
-  - openjdk12
+  - oraclejdk8
+#  - openjdk12
 
 #env:
 #  global:
