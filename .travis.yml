@@ -34,5 +34,7 @@ script:
 #  - cargo fmt --all -- --check
 #  - cargo test --features=backtrace,invocation
 #  - cargo clippy --all --tests --all-features -- -D warnings
+  - export JAVA_HOME=$HOME/openjdk11
+  - $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk12 --target $JAVA_HOME
   - cd "$TRAVIS_BUILD_DIR"
   - .travis/run_travis_job.sh
