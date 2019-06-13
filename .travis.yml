@@ -4,6 +4,12 @@ rust:
     - beta
     - nightly
 
+# Build only the following branches/tags pushed to the repository:
+branches:
+  only:
+    - master
+    - check_ci
+
 matrix:
   allow_failures:
     - rust: nightly
@@ -21,7 +27,10 @@ before_script:
   - export RUST_BACKTRACE=1
   - echo $JAVA_HOME
   - echo $LD_LIBRARY_PATH
+  - rustup component add rustfmt
+  - rustup component add clippy
 
 script:
-  - cd "$TRAVIS_BUILD_DIR"
-  - .travis/run_travis_job.sh
+  - cargo fmt --all -- --check
+  - cargo test --features=backtrace,invocation
+  - cargo clippy --all --tests --all-features -- -D warnings
