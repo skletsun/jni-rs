@@ -6,6 +6,9 @@ set -eu -o pipefail
 # Echo commands so that the progress can be seen in CI server logs.
 set -x
 
+# Install Java
+export JAVA_HOME="$(.travis/install-jdk.sh -s -f 12 -e)"
+
 # Install clippy and rustfmt.
 rustup component add clippy
 rustup component add rustfmt
@@ -21,10 +24,10 @@ cargo fmt --all -- --check
 # Run clippy static analysis.
 cargo clippy --all --tests --all-features -- -D warnings
 
-JAVA_HOME="$(java -XshowSettings:properties -version \
-    2>&1 > /dev/null |\
-    grep 'java.home' |\
-    awk '{print $3}')"
+#JAVA_HOME="$(java -XshowSettings:properties -version \
+#    2>&1 > /dev/null |\
+#    grep 'java.home' |\
+#    awk '{print $3}')"
 LIBJVM_PATH="$(find -L ${JAVA_HOME} -type f -name libjvm.* | xargs -n1 dirname)"
 
 export LD_LIBRARY_PATH="${LIBJVM_PATH}"
