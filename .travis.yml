@@ -16,12 +16,12 @@ matrix:
   fast_finish: true
 
 jdk:
-  - oraclejdk8
+  - oraclejdk12
 
-env:
-  global:
-    - JAVA_HOME=/usr/lib/jvm/java-8-oracle
-    - LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64/server
+#env:
+#  global:
+#    - JAVA_HOME=/usr/lib/jvm/java-8-oracle
+#    - LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64/server
 
 before_script:
   - export RUST_BACKTRACE=1
