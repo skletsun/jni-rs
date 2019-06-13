@@ -29,10 +29,12 @@ before_script:
   - ls -l $JAVA_HOME
   - echo $LD_LIBRARY_PATH
   - ls -l $LD_LIBRARY_PATH
-  - rustup component add rustfmt
-  - rustup component add clippy
+#  - rustup component add rustfmt
+#  - rustup component add clippy
 
 script:
-  - cargo fmt --all -- --check
-  - cargo test --features=backtrace,invocation
-  - cargo clippy --all --tests --all-features -- -D warnings
+#  - cargo fmt --all -- --check
+#  - cargo test --features=backtrace,invocation
+#  - cargo clippy --all --tests --all-features -- -D warnings
+  - cd "$TRAVIS_BUILD_DIR"
+  - .travis/run_travis_job.sh
