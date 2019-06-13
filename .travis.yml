@@ -26,7 +26,9 @@ env:
 before_script:
   - export RUST_BACKTRACE=1
   - echo $JAVA_HOME
+  - ls -l $JAVA_HOME
   - echo $LD_LIBRARY_PATH
+  - ls -l $LD_LIBRARY_PATH
   - rustup component add rustfmt
   - rustup component add clippy
 
