@@ -20,10 +20,10 @@ RUST_NIGHTLY_VERSION="$(rustc --version | awk -F'[ )]+' '/nightly/ {print $4}')"
 if [[ -n "$RUST_NIGHTLY_VERSION" ]]
 then
     # Install nightly clippy
-    echo "The version is ${RUST_NIGHTLY_VERSION}"
-else
-    # Install nightly clippy
     rustup component add clippy --toolchain=nightly || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
+else
+    # Install stable clippy
+    rustup component add clippy
 fi
 cargo clippy -V
 
