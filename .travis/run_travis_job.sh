@@ -14,11 +14,22 @@ export JAVA_HOME="$(java -XshowSettings:properties -version \
 # Install Java
 #export JAVA_HOME="$(.travis/install-jdk.sh -s -f 12 -e)"
 
-# Install clippy and rustfmt.
-rustup component add clippy
+# Install clippy and rustfmt
+RUST_NIGHTLY_VERSION="$(rustc --version | awk -F'[ )]+' '/nightly/ {print $4}')"
+
+if [[ -n "$RUST_NIGHTLY_VERSION" ]]
+then
+    # Install nightly clippy
+    echo "The version is ${RUST_NIGHTLY_VERSION}"
+else
+    # Install nightly clippy
+    rustup component add clippy --toolchain=nightly || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
+fi
+cargo clippy -V
+
+# Install rustfmt
 rustup component add rustfmt
 rustfmt -V
-cargo clippy -V
 
 echo 'Performing checks over the rust code'
 # Check the formatting.
