@@ -14,10 +14,8 @@ export JAVA_HOME="$(java -XshowSettings:properties -version \
 # Install Java
 #export JAVA_HOME="$(.travis/install-jdk.sh -s -f 12 -e)"
 
-# Install clippy and rustfmt
-RUST_NIGHTLY_VERSION="$(rustc --version | awk -F'[ )]+' '/nightly/ {print $4}')"
-
-if [[ -n "$RUST_NIGHTLY_VERSION" ]]
+# Install clippy
+if rustc --version | grep -q "nightly"
 then
     # Install nightly clippy
     rustup component add clippy --toolchain=nightly || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
